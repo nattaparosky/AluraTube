@@ -1,25 +1,36 @@
+import React from "react";
 import config from "../config.json";
 import styled from "styled-components";
 import { CSSReset } from "../src/components/CSSReset";
-import Menu from "../src/components/Menu";
+import Menu from "../src/components/Menu/Menu";
 import { StyledTimeline } from "../src/components/Timeline";
 
 function HomePage() {
+    const estilosDaHomePage = {
+        // backgroundColor: "red" 
+    };
+
+    const [valorDoFiltro, setValorDoFiltro] = React.useState("");
 
     return (
         <>
-        <CSSReset />
-        <div>
-            <Menu />
-            <Header />
-            <Timeline playlists={config.playlists} />
-        </div>
+            <CSSReset />
+            <div style={{
+                display: "flex",
+                flexDirection: "column",
+                flex: 1,
+                // backgroundColor: "red",
+            }}>
+                <Menu valorDoFiltro={valorDoFiltro} setValorDoFiltro={setValorDoFiltro} />
+                <Header />
+                <Timeline searchValue={valorDoFiltro} playlists={config.playlists}>
+                    Conteúdo
+                </Timeline>
+            </div>
         </>
-    )
-  }
-  
-  export default HomePage
-
+    );
+}
+export default HomePage
 // function Menu() {
 //     return (
 //         <div>
@@ -27,14 +38,12 @@ function HomePage() {
 //         </div>
 //     )
 // }
-
 const StyledHeader = styled.div`
     img {
         width: 80px;
         height: 80px;
-        border-radius: 50%
+        border-radius: 50%;
     }
-
     .user-info {
         display: flex;
         align-items: center;
@@ -43,46 +52,60 @@ const StyledHeader = styled.div`
         gap: 16px;
     }
 `;
-
+const StyledBanner = styled.div`
+    background-color: blue;
+    background-image: url(${({ bg }) => bg});
+    /* background-image: url(${config.bg}); */
+    height: 230px;
+`;
 function Header() {
     return (
         <StyledHeader>
-            {/* <img src="banner" /> */}
+            <StyledBanner bg={config.bg} />
             <section className="user-info">
                 <img src={`https://github.com/${config.github}.png`} />
                 <div>
-                <h2>
-                    {config.name}
-                </h2>
-                <p>
-                    {config.job}
-                </p>
+                    <h2>
+                        {config.name}
+                    </h2>
+                    <p>
+                        {config.job}
+                    </p>
                 </div>
             </section>
         </StyledHeader>
     )
 }
 
-function Timeline(props) {
-    const playlistsNames = Object.keys(props.playlists);
+function Timeline({ searchValue, ...props }) {
+    // console.log("Dentro do componente", props.playlists);
+    const playlistNames = Object.keys(props.playlists);
+    // Statement
+    // Retorno por expressão
     return (
         <StyledTimeline>
-            {playlistsNames.map((playlistsName) => {
-                const videos = props.playlists[playlistsName];
+            {playlistNames.map((playlistName) => {
+                const videos = props.playlists[playlistName];
                 return (
-                    <section>
-                        <h2> {playlistsName} </h2>
+                    <section key={playlistName}>
+                        <h2>{playlistName}</h2>
                         <div>
-                            {videos.map((video) => {
-                                return (
-                                    <a href={video.url}>
-                                        <img src={video.thumb} />
-                                        <span>
-                                            {video.title}
-                                        </span>
-                                    </a>
-                                )              
-                            })}
+                        {videos
+                                .filter((video) => {
+                                    const titleNormalized = video.title.toLowerCase();
+                                    const searchValueNormalized = searchValue.toLowerCase();
+                                    return titleNormalized.includes(searchValueNormalized)
+                                })
+                                .map((video) => {
+                                    return (
+                                        <a key={video.url} href={video.url}>
+                                            <img src={video.thumb} />
+                                            <span>
+                                                {video.title}
+                                            </span>
+                                        </a>
+                                    )
+                                })}
                         </div>
                     </section>
                 )
